@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OFS | Profile & Settings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-teal: #00BFA5;
+            --primary-dark: #00897B;
+            --bg-app: #F4F7F9;
+            --white: #FFFFFF;
+            --text-main: #1A1D23;
+            --text-muted: #64748B;
+            --radius-lg: 28px;
+            --radius-md: 18px;
+            --shadow-sm: 0 4px 12px rgba(0,0,0,0.03);
+            --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg-app); font-family: 'Inter', sans-serif; color: var(--text-main); min-height: 100vh; }
+
+        .navbar {
+            background: var(--white); padding: 1rem 6%;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #E2E8F0; position: sticky; top: 0; z-index: 100;
+        }
+        .logo { font-weight: 800; font-size: 1.5rem; color: var(--primary-teal); text-decoration: none; }
+        .back-link { text-decoration: none; color: var(--text-muted); font-weight: 700; display: flex; align-items: center; gap: 8px; }
+
+        .settings-container { max-width: 900px; margin: 40px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
+
+        .info-sidebar { display: flex; flex-direction: column; gap: 20px; }
+        .avatar-card {
+            background: white; padding: 30px; border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm); text-align: center;
+        }
+        .profile-img-container {
+            width: 120px; height: 120px; margin: 0 auto 15px;
+            border-radius: 50%; border: 4px solid #F1F5F9;
+            overflow: hidden; position: relative; background: #F8FAFC;
+        }
+        .profile-img-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        .upload-label {
+            font-size: 0.75rem; font-weight: 800; color: var(--primary-teal);
+            cursor: pointer; text-decoration: underline; display: block; margin-top: 10px;
+        }
+
+        .btn-qr {
+            width: 100%; background: #F1F5F9; color: var(--text-main); border: 2px solid #E2E8F0;
+            padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 15px;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
+        }
+        .btn-qr:hover { background: #E2E8F0; }
+
+        .data-card { background: white; padding: 25px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+        .data-label { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-top: 15px; }
+        .data-value { font-size: 1rem; font-weight: 700; color: var(--text-main); }
+
+        .settings-card { background: var(--white); padding: 35px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); margin-bottom: 25px; }
+        .section-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 20px; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 700; font-size: 0.85rem; margin-bottom: 8px; color: var(--text-muted); }
+        .form-input { width: 100%; padding: 14px; border: 2px solid #F1F5F9; border-radius: 12px; font-family: inherit; font-weight: 600; }
+
+        .btn-update { background: var(--primary-teal); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; transition: 0.3s; }
+        .btn-update:hover { background: var(--primary-dark); }
+
+        .modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(5px); z-index: 2000; align-items: center; justify-content: center; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; padding: 30px; border-radius: var(--radius-lg); width: 90%; max-width: 400px; text-align: center; box-shadow: var(--shadow-lg); }
+
+        @media (max-width: 768px) { .settings-container { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="dashboard.html" class="logo">💠 OFS</a>
+    <a href="dashboard.html" class="back-link">← Back</a>
+</nav>
+
+<div class="settings-container">
+    <aside class="info-sidebar">
+        <div class="avatar-card">
+            <div class="profile-img-container">
+                <img id="avatarPreview" src="https://ui-avatars.com/api/?name=User&background=00BFA5&color=fff" alt="Avatar">
+            </div>
+            <label for="avatarUpload" class="upload-label">Change Photo</label>
+            <input type="file" id="avatarUpload" hidden accept="image/*" onchange="previewAndUploadAvatar(this)">
+            <h3 id="sidebarUsername" style="margin-top:15px; font-weight:800;">@username</h3>
+
+            <button class="btn-qr" onclick="showMyQR()"><span>📷</span> View My QR</button>
+        </div>
+
+        <div class="data-card">
+            <p class="data-label">Customer ID</p>
+            <p class="data-value" id="currID">#---</p>
+            <p class="data-label">Status</p>
+            <p class="data-value" style="color: var(--primary-teal);">Verified Account ✓</p>
+        </div>
+    </aside>
+
+    <main>
+        <div class="settings-card">
+            <h2 class="section-title">Personal Details</h2>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="newEmail" class="form-input">
+            </div>
+            <div class="form-group">
+                <label>Date of Birth</label>
+                <input type="date" id="newDOB" class="form-input">
+            </div>
+            <div class="form-group">
+                <label>Residential Address</label>
+                <textarea id="newAddress" class="form-input" style="min-height: 80px; resize: none;"></textarea>
+            </div>
+            <button class="btn-update" onclick="updateProfile()">Save All Changes</button>
+        </div>
+
+        <div class="settings-card">
+            <h2 class="section-title">Security</h2>
+            <div class="form-group">
+                <label>New Password</label>
+                <input type="password" id="newPassword" class="form-input" placeholder="Min 6 characters">
+            </div>
+            <button class="btn-update" style="background: var(--text-main);" onclick="updatePassword()">Update Password</button>
+        </div>
+    </main>
+</div>
+
+<div id="qrModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-bottom: 15px; font-weight: 800;">My Payment QR</h3>
+        <div style="background: white; padding: 15px; border-radius: 18px; border: 1px solid #F1F5F9; display: inline-block;">
+            <img id="myQrImage" src="" style="width: 250px; height: 250px; display: block;">
+        </div>
+        <p style="margin-top: 15px; font-weight: 700; color: var(--text-muted);" id="qrUserLabel">ID: @username</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;">
+            <a id="downloadQR" download="MyOFS_QR.png" class="btn-update" style="text-decoration: none; background: var(--primary-teal); display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+                💾 Download
+            </a>
+            <button class="btn-update" style="background: #F1F5F9; color: var(--text-main);" onclick="closeQRModal()">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:8081';
+    const userId = localStorage.getItem("userId");
+
+    async function fetchUserDetails() {
+        if (!userId) { window.location.href = "login.html"; return; }
+        try {
+            const res = await fetch(`${API_URL}/get-details/${userId}`);
+            const data = await res.json();
+
+            document.getElementById('sidebarUsername').textContent = `@${data.username}`;
+            document.getElementById('currID').textContent = `#${userId}`;
+
+            if(data.email) document.getElementById('newEmail').value = data.email;
+            if(data.dob) document.getElementById('newDOB').value = data.dob;
+            if(data.address) document.getElementById('newAddress').value = data.address;
+
+            const photoRes = await fetch(`${API_URL}/get-profile-photo/${userId}`);
+            const photoData = await photoRes.json();
+
+            if(photoData && photoData.photoUrl) {
+                document.getElementById('avatarPreview').src = photoData.photoUrl;
+            } else {
+                document.getElementById('avatarPreview').src = `https://ui-avatars.com/api/?name=${data.username}&background=00BFA5&color=fff`;
+            }
+
+        } catch (e) {
+            console.error("Load failed", e);
+        }
+    }
+
+    async function showMyQR() {
+        const usernameDisplay = document.getElementById('sidebarUsername').textContent;
+        const username = usernameDisplay.replace('@', '').trim();
+
+        if (!username || username === "username") {
+            alert("Account details still loading...");
+            return;
+        }
+
+        try {
+            // FIXED: Added /api/ to match your QrController's @RequestMapping("/api")
+            const res = await fetch(`${API_URL}/api/generate-my-qr/${username}`);
+
+            if (!res.ok) throw new Error("Server responded with an error");
+
+            const data = await res.json();
+
+            if(data.qrCode) {
+                const qrImg = document.getElementById('myQrImage');
+                qrImg.src = data.qrCode;
+
+                const downloadLink = document.getElementById('downloadQR');
+                downloadLink.href = data.qrCode;
+
+                document.getElementById('qrUserLabel').textContent = `ID: @${username}`;
+                document.getElementById('qrModal').classList.add('show');
+            } else {
+                alert("Error: " + (data.error || "Generation failed"));
+            }
+        } catch (e) {
+            console.error("QR Fetch failed", e);
+            alert("Connection error: Make sure Backend is running and URL includes /api/");
+        }
+    }
+
+    function closeQRModal() {
+        document.getElementById('qrModal').classList.remove('show');
+    }
+
+    async function previewAndUploadAvatar(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const base64Image = e.target.result;
+                document.getElementById('avatarPreview').src = base64Image;
+
+                try {
+                    const response = await fetch(`${API_URL}/update-photo`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            userId: parseInt(userId),
+                            photoUrl: base64Image
+                        })
+                    });
+                    if(response.ok) alert("Photo updated!");
+                } catch (err) { console.error("Upload failed", err); }
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    async function updateProfile() {
+        const fields = {
+            email: document.getElementById('newEmail').value,
+            dob: document.getElementById('newDOB').value,
+            address: document.getElementById('newAddress').value
+        };
+        for (const [key, value] of Object.entries(fields)) {
+            if(value) await sendUpdate(key, value);
+        }
+        alert("Details updated!");
+        fetchUserDetails();
+    }
+
+    async function updatePassword() {
+        const pass = document.getElementById('newPassword').value;
+        if(pass.length < 6) return alert("Password too short");
+        await sendUpdate("password", pass);
+        alert("Password updated!");
+        document.getElementById('newPassword').value = "";
+    }
+
+    async function sendUpdate(key, value) {
+        try {
+            await fetch(`${API_URL}/update`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id: parseInt(userId), key: key, value: value })
+            });
+        } catch (e) { console.error("Update error"); }
+    }
+
+    window.onload = fetchUserDetails;
+</script>
+</body>
+</html>

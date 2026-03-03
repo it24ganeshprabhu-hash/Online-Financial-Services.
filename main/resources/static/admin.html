@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OFS Admin | Command Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-teal: #00BFA5;
+            --primary-dark: #00897B;
+            --accent-indigo: #4F46E5;
+            --bg-app: #F8FAFC;
+            --white: #FFFFFF;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --shadow-premium: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --frozen: #94A3B8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: var(--bg-app);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            background-image: radial-gradient(circle at top right, rgba(0, 191, 165, 0.08), transparent 600px);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            padding: 1rem 6%;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            position: sticky; top: 0; z-index: 1000;
+        }
+        .logo {
+            font-weight: 800; font-size: 1.6rem;
+            background: linear-gradient(135deg, var(--primary-teal), var(--accent-indigo));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+
+        .page-header {
+            display: flex; justify-content: space-between; align-items: flex-end;
+            margin-bottom: 35px;
+        }
+        .header-left h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: -1px; }
+
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px; margin-bottom: 40px;
+        }
+        .stat-card {
+            background: var(--white); padding: 28px; border-radius: var(--radius-md);
+            box-shadow: var(--shadow-premium); border: 1px solid rgba(226, 232, 240, 0.5);
+            transition: transform 0.2s ease;
+        }
+
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
+        .stat-value { font-size: 2rem; font-weight: 800; margin-top: 10px; }
+
+        .management-strip {
+            background: var(--white); padding: 18px 24px; border-radius: var(--radius-md);
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 25px; box-shadow: var(--shadow-premium); gap: 20px;
+        }
+        .search-container { flex: 1; }
+        .search-container input {
+            width: 100%; padding: 12px 18px; border-radius: 12px;
+            border: 1px solid #E2E8F0; background: #F8FAFC; outline: none;
+        }
+
+        .admin-card { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-premium); overflow: hidden; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        th { background: #F1F5F9; padding: 20px 25px; text-align: left; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+        td { padding: 20px 25px; border-bottom: 1px solid #F1F5F9; font-size: 0.95rem; font-weight: 600; }
+
+        .btn {
+            padding: 12px 22px; border-radius: 12px; border: none; font-weight: 700;
+            cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 10px;
+        }
+        .btn-primary { background: var(--primary-teal); color: white; }
+        .btn-outline { background: var(--white); border: 1.5px solid #E2E8F0; color: var(--text-main); }
+        .btn-danger { color: var(--danger); border: 1.5px solid #FEE2E2; background: transparent; }
+
+        .form-input { width: 100%; padding: 12px; border: 1px solid #E2E8F0; border-radius: 10px; font-family: inherit; margin-bottom: 5px; }
+
+        .message { position: fixed; top: 20px; right: 20px; padding: 15px 25px; border-radius: 12px; color: white; transform: translateX(150%); transition: 0.4s; z-index: 3000; font-weight: 700; }
+        .message.show { transform: translateX(0); }
+        .message.success { background: var(--success); }
+        .message.error { background: var(--danger); }
+
+        .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; padding: 40px; border-radius: var(--radius-lg); width: 100%; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative; }
+
+        .support-item { padding: 15px; border-radius: 12px; border: 1px solid #E2E8F0; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
+        .support-item:hover { background: #F8FAFC; border-color: var(--primary-teal); }
+        .support-tag { font-size: 0.7rem; padding: 2px 8px; border-radius: 5px; background: #E2E8F0; color: #475569; }
+
+        .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary-teal); }
+        input:checked + .slider:before { transform: translateX(18px); }
+    </style>
+</head>
+<body>
+
+<div id="adminMessage" class="message"></div>
+
+<nav class="navbar">
+    <a href="#" class="logo">💠 OFS Admin</a>
+    <div style="display: flex; gap: 12px; align-items: center;">
+        <button onclick="openSupportInbox()" class="btn btn-outline" style="border-color: var(--accent-indigo); color: var(--accent-indigo);">📩 Support Inbox</button>
+        <button onclick="openAlertModal()" class="btn btn-outline" style="border-color: var(--primary-teal); color: var(--primary-teal);">🔔 Send Alert</button>
+        <button onclick="logout()" class="btn btn-outline" style="color: var(--danger);">Logout</button>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="page-header">
+        <div class="header-left">
+            <h1>Command Center</h1>
+            <p style="color: var(--text-muted)">User oversight & security management.</p>
+        </div>
+        <div class="header-actions" style="display: flex; gap: 12px;">
+            <button onclick="goToHistory()" class="btn btn-outline">📜 System Logs</button>
+            <button onclick="openAddUserModal()" class="btn btn-primary">➕ Create Account</button>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Users</div>
+            <div id="totalUsers" class="stat-value">0</div>
+        </div>
+        <div class="stat-card" style="border-left: 5px solid var(--primary-teal);">
+            <div class="stat-label">Total Balance</div>
+            <div class="stat-value" style="color: var(--primary-teal);">₹<span id="totalBalance">0.00</span></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Support Tickets</div>
+            <div id="ticketCount" class="stat-value" style="color: var(--accent-indigo);">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Active Users</div>
+            <div id="activeUsers" class="stat-value" style="color: var(--success);">0</div>
+        </div>
+    </div>
+
+    <div class="management-strip">
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search by name or username..." onkeyup="searchUsers()">
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <select id="sortBy" onchange="applySort()" class="btn btn-outline">
+                <option value="id">ID</option>
+                <option value="name">Name</option>
+                <option value="balance">Balance</option>
+            </select>
+            <select id="sortOrder" onchange="applySort()" class="btn btn-outline">
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="admin-card">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Identity</th>
+                <th>Role</th>
+                <th>Balance</th>
+                <th>Access Status</th>
+                <th style="text-align: right;">Action</th>
+            </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="supportInboxModal" class="modal">
+    <div class="modal-content" style="max-width: 800px; height: 80vh; display: flex; flex-direction: column;">
+        <h2 style="margin-bottom: 20px; font-weight: 800;">Support Inbox</h2>
+        <div style="display: grid; grid-template-columns: 300px 1fr; gap: 20px; flex: 1; overflow: hidden;">
+            <div id="ticketList" style="overflow-y: auto; border-right: 1px solid #E2E8F0; padding-right: 10px;"></div>
+            <div id="ticketDetail" style="display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-muted);">
+                <p>Select a ticket to view conversation</p>
+            </div>
+        </div>
+        <button onclick="closeSupportInbox()" class="btn btn-outline" style="margin-top: 20px; align-self: flex-end;">Close</button>
+    </div>
+</div>
+
+<div id="alertModal" class="modal">
+    <div class="modal-content" style="max-width: 450px;">
+        <h2 style="margin-bottom: 20px; font-weight: 800;">Broadcast Alert</h2>
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <select id="alertTarget" class="form-input">
+                <option value="0">📢 BROADCAST TO ALL USERS</option>
+            </select>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="alertTitle" placeholder="Subject" class="form-input" style="flex: 2;">
+                <select id="alertExpiry" class="form-input" style="flex: 1;">
+                    <option value="24" selected>24 Hours</option>
+                    <option value="168">7 Days</option>
+                </select>
+            </div>
+            <textarea id="alertMessage" placeholder="Message content..." class="form-input" style="min-height: 100px;"></textarea>
+        </div>
+        <div style="display: flex; gap: 15px; margin-top: 25px;">
+            <button onclick="sendAlert()" class="btn btn-primary" style="flex: 2;">Confirm Alert</button>
+            <button onclick="closeAlertModal()" class="btn btn-outline" style="flex: 1;">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="addUserModal" class="modal">
+    <div class="modal-content" style="max-width: 650px; height: 85vh; display: flex; flex-direction: column;">
+        <h2 style="margin-bottom: 25px; font-weight: 800;">Member Registration</h2>
+        <form id="addUserForm" onsubmit="handleAddUser(event)" style="flex: 1; overflow-y: auto; padding-right: 10px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div style="grid-column: span 1;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">FULL NAME</label>
+                    <input type="text" id="addName" placeholder="Full Name" required class="form-input">
+                </div>
+                <div style="grid-column: span 1;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">USERNAME</label>
+                    <input type="text" id="addUsername" placeholder="Username" required class="form-input">
+                </div>
+                <div style="grid-column: span 1;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">EMAIL ADDRESS</label>
+                    <input type="email" id="addEmail" placeholder="Email" required class="form-input">
+                </div>
+                <div style="grid-column: span 1;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">PASSWORD</label>
+                    <input type="password" id="addPassword" placeholder="Secure Password" required class="form-input">
+                </div>
+                <div style="grid-column: span 1;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">DATE OF BIRTH</label>
+                    <input type="date" id="addDob" required class="form-input">
+                </div>
+                <div style="grid-column: span 1;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">AADHAAR NUMBER</label>
+                    <input type="text" id="addAadhaar" placeholder="12 Digit Aadhaar" required maxlength="12" class="form-input">
+                </div>
+                <div style="grid-column: span 1;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">ACCOUNT TYPE</label>
+                    <select id="addAccountType" class="form-input">
+                        <option value="Savings">Savings</option>
+                        <option value="Current">Current</option>
+                        <option value="Salary">Salary</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted);">ACCOUNT ROLE</label>
+                    <select id="addRole" class="form-input" style="border: 1px solid var(--primary-teal); background: #f0fdfa;">
+                        <option value="customer">Customer</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                </div>
+                <div style="grid-column: span 2;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">INITIAL BALANCE (₹)</label>
+                    <input type="number" id="addBalance" value="0" required class="form-input">
+                </div>
+                <div style="grid-column: span 2;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">RESIDENTIAL ADDRESS</label>
+                    <textarea id="addAddress" placeholder="Full Address" required class="form-input" style="height: 80px;"></textarea>
+                </div>
+            </div>
+            <div style="display: flex; gap: 15px; margin-top: 30px; position: sticky; bottom: 0; background: white; padding-top: 10px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1.5;">Create Account</button>
+                <button type="button" class="btn btn-outline" onclick="closeAddUserModal()" style="flex: 1;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:8081';
+    let userId = localStorage.getItem("userId");
+    let allUsers = [];
+
+    async function loadAllUsers(sortBy = 'id', order = 'asc') {
+        try {
+            const response = await fetch(`${API_URL}/users?sortBy=${sortBy}&order=${order}`);
+            const data = await response.json();
+            allUsers = Array.isArray(data) ? data : [data];
+            updateStatistics();
+            displayUsers(allUsers);
+        } catch (error) {
+            console.error("Fetch Error:", error);
+            showMessage('Database connection error', 'error');
+        }
+    }
+
+    function updateStatistics() {
+        document.getElementById('totalUsers').textContent = allUsers.length;
+        const totalBalance = allUsers.reduce((sum, u) => sum + (parseFloat(u.balance) || 0), 0);
+        document.getElementById('totalBalance').textContent = totalBalance.toLocaleString();
+        document.getElementById('activeUsers').textContent = allUsers.filter(u => u.status === 'ACTIVE').length;
+        loadTickets();
+    }
+
+    function displayUsers(users) {
+        const tableBody = document.getElementById('usersTableBody');
+        if (!users || users.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No users found.</td></tr>';
+            return;
+        }
+
+        tableBody.innerHTML = users.map(user => `
+            <tr>
+                <td>#${user.id}</td>
+                <td><div style="font-weight:800;">${user.name}</div><div style="font-size:0.7rem; color:var(--text-muted)">@${user.username}</div></td>
+                <td><span style="font-size:0.7rem; font-weight:800; color:${user.role === 'admin' ? 'var(--accent-indigo)' : 'inherit'}">${(user.role || 'user').toUpperCase()}</span></td>
+                <td style="color:var(--primary-teal)">₹${(parseFloat(user.balance) || 0).toFixed(2)}</td>
+                <td>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <label class="switch">
+                            <input type="checkbox" ${user.status !== 'FROZEN' ? 'checked' : ''} onchange="toggleAccountStatus(${user.id}, this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                        <span style="font-size:0.75rem; font-weight:700; color:${user.status === 'FROZEN' ? 'var(--danger)' : 'var(--success)'}">
+                            ${user.status || 'ACTIVE'}
+                        </span>
+                    </div>
+                </td>
+                <td style="text-align: right;">
+                    <button class="btn btn-danger" style="padding: 5px 10px; font-size: 0.7rem;" onclick="confirmDeleteUser(${user.id})">Remove</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function handleAddUser(event) {
+        event.preventDefault();
+        const userData = {
+            name: document.getElementById('addName').value,
+            username: document.getElementById('addUsername').value,
+            email: document.getElementById('addEmail').value,
+            password: document.getElementById('addPassword').value,
+            dob: document.getElementById('addDob').value,
+            aadhaarNumber: document.getElementById('addAadhaar').value,
+            accountType: document.getElementById('addAccountType').value,
+            balance: parseFloat(document.getElementById('addBalance').value) || 0,
+            address: document.getElementById('addAddress').value,
+            role: document.getElementById('addRole').value,
+            status: 'ACTIVE'
+        };
+        try {
+            const res = await fetch(`${API_URL}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            });
+            if (res.ok) {
+                showMessage('Account Created!', 'success');
+                closeAddUserModal();
+                loadAllUsers();
+            } else {
+                const err = await res.text();
+                showMessage(err, 'error');
+            }
+        } catch (e) { showMessage('Registration failed', 'error'); }
+    }
+
+    function applySort() {
+        const field = document.getElementById('sortBy').value;
+        const order = document.getElementById('sortOrder').value;
+        loadAllUsers(field, order);
+    }
+
+    function searchUsers() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allUsers.filter(u => u.name.toLowerCase().includes(term) || u.username.toLowerCase().includes(term));
+        displayUsers(filtered);
+    }
+
+    async function toggleAccountStatus(id, isActive) {
+        const status = isActive ? 'ACTIVE' : 'FROZEN';
+        await fetch(`${API_URL}/admin/update-status/${id}?status=${status}&adminId=${userId}`, { method: 'PUT' });
+        loadAllUsers();
+    }
+
+    async function confirmDeleteUser(id) {
+    if(confirm("Permanently delete this user?")) {
+        // userId here is the one retrieved from localStorage at the top of your script
+        const response = await fetch(`${API_URL}/api/users/${id}/admin/${userId}`, {
+            method: 'DELETE'
+        });
+
+        const result = await response.text();
+
+        if (response.ok && result.includes("successfully")) {
+            showMessage(result, 'success');
+            loadAllUsers(); // Refresh the table
+        } else {
+            showMessage(result, 'error');
+        }
+    }
+}
+
+    async function loadTickets() {
+        try {
+            const response = await fetch(`${API_URL}/api/support/admin/all`);
+            const tickets = await response.json();
+            document.getElementById('ticketCount').textContent = tickets.length;
+            document.getElementById('ticketList').innerHTML = tickets.map(t => `
+                <div class="support-item" onclick="viewTicket(${t.id})">
+                    <b>${t.userName}</b> <span class="support-tag">${t.status}</span><br><small>${t.subject}</small>
+                </div>`).join('');
+        } catch (e) {}
+    }
+
+    async function viewTicket(id) {
+        const res = await fetch(`${API_URL}/api/support/admin/all`);
+        const tickets = await res.json();
+        const ticket = tickets.find(t => t.id === id);
+        document.getElementById('ticketDetail').innerHTML = `
+            <div style="width:100%; padding:20px;">
+                <p><b>From:</b> ${ticket.userName}</p><p><b>Message:</b> ${ticket.message}</p>
+                <textarea id="replyText" class="form-input" placeholder="Reply..." style="margin-top:10px;"></textarea>
+                <button onclick="sendReply(${ticket.id})" class="btn btn-primary" style="width:100%; margin-top:10px;">Reply & Close</button>
+            </div>`;
+    }
+
+    async function sendReply(id) {
+        const msg = document.getElementById('replyText').value;
+        await fetch(`${API_URL}/api/support/admin/reply/${id}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg })
+        });
+        showMessage('Reply Sent', 'success');
+        loadTickets();
+    }
+
+    async function sendAlert() {
+        const data = {
+            targetId: parseInt(document.getElementById('alertTarget').value),
+            title: document.getElementById('alertTitle').value,
+            message: document.getElementById('alertMessage').value,
+            expiry: 24
+        };
+        await fetch(`${API_URL}/api/alerts/send`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        showMessage('Alert Broadcasted', 'success');
+        closeAlertModal();
+    }
+
+    function openSupportInbox() { document.getElementById('supportInboxModal').classList.add('show'); loadTickets(); }
+    function closeSupportInbox() { document.getElementById('supportInboxModal').classList.remove('show'); }
+    function openAlertModal() {
+        const sel = document.getElementById('alertTarget');
+        sel.innerHTML = '<option value="0">📢 BROADCAST TO ALL USERS</option>';
+        allUsers.forEach(u => sel.innerHTML += `<option value="${u.id}">${u.name}</option>`);
+        document.getElementById('alertModal').classList.add('show');
+    }
+    function closeAlertModal() { document.getElementById('alertModal').classList.remove('show'); }
+    function openAddUserModal() { document.getElementById('addUserModal').classList.add('show'); }
+    function closeAddUserModal() { document.getElementById('addUserModal').classList.remove('show'); }
+    function showMessage(m, t) { const e = document.getElementById('adminMessage'); e.textContent = m; e.className = `message ${t} show`; setTimeout(() => e.classList.remove('show'), 3000); }
+    function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+    function goToHistory() { window.location.href = `history.html?id=${userId}&role=admin`; }
+    window.onload = () => { if(!userId) window.location.href='login.html'; loadAllUsers(); };
+</script>
+</body>
+</html>

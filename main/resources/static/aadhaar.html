@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Identity Verification - OFS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-teal: #00BFA5;
+            --primary-dark: #00897B;
+            --bg-app: #F4F7F8;
+            --white: #FFFFFF;
+            --text-main: #2D3142;
+            --text-muted: #9BA1A6;
+            --radius: 24px;
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+            --error: #FF5252;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-app);
+            font-family: 'Inter', sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; padding: 20px;
+        }
+
+        .verify-card {
+            background: var(--white); max-width: 500px; width: 100%;
+            padding: 40px; border-radius: var(--radius); box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .icon-header {
+            width: 80px; height: 80px; background: rgba(0, 191, 165, 0.1);
+            color: var(--primary-teal); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; margin: 0 auto 20px;
+        }
+
+        h2 { color: var(--text-main); margin-bottom: 10px; font-size: 1.8rem; }
+        .desc { color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem; line-height: 1.5; }
+
+        .input-group { display: flex; gap: 12px; justify-content: center; margin-bottom: 25px; }
+
+        .input-box {
+            border: 2px solid #EAECEF; border-radius: 12px;
+            text-align: center; font-weight: 700; color: var(--text-main);
+            transition: all 0.3s ease;
+        }
+
+        .aadhaar-box { width: 85px; height: 55px; font-size: 1.2rem; }
+        .otp-box {
+            width: 50px; height: 60px; font-size: 1.5rem;
+            border-color: var(--primary-teal); background: rgba(0, 191, 165, 0.02);
+            display: none;
+        }
+
+        .input-box:focus { border-color: var(--primary-teal); outline: none; box-shadow: 0 0 0 4px rgba(0, 191, 165, 0.1); }
+
+        .btn-action {
+            width: 100%; padding: 16px; background: var(--primary-teal);
+            color: white; border: none; border-radius: 14px;
+            font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.3s;
+        }
+
+        .btn-action:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .btn-action:disabled { background: #ccc; cursor: not-allowed; }
+
+        .status-msg { margin-top: 15px; font-size: 0.85rem; min-height: 20px; }
+        .error { color: var(--error); font-weight: 600; }
+        .success { color: var(--primary-teal); font-weight: 600; }
+
+        .secure-footer { margin-top: 30px; font-size: 0.75rem; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+<div class="verify-card">
+    <div class="icon-header" id="step-icon">🛡️</div>
+
+    <h2 id="main-title">Aadhaar Verification</h2>
+    <p class="desc" id="main-desc">Enter your 12-digit Aadhaar number to link your profile.</p>
+
+    <div class="input-group" id="aadhaar-container">
+        <input type="text" class="input-box aadhaar-box" maxlength="4" placeholder="0000">
+        <input type="text" class="input-box aadhaar-box" maxlength="4" placeholder="0000">
+        <input type="text" class="input-box aadhaar-box" maxlength="4" placeholder="0000">
+    </div>
+
+    <div class="input-group" id="otp-container" style="display: none;">
+        <input type="text" class="input-box otp-box" maxlength="1">
+        <input type="text" class="input-box otp-box" maxlength="1">
+        <input type="text" class="input-box otp-box" maxlength="1">
+        <input type="text" class="input-box otp-box" maxlength="1">
+        <input type="text" class="input-box otp-box" maxlength="1">
+        <input type="text" class="input-box otp-box" maxlength="1">
+    </div>
+
+    <button type="button" class="btn-action" id="primaryBtn" onclick="processIdentity()">Generate OTP</button>
+    <p id="feedback" class="status-msg"></p>
+
+    <div class="secure-footer">🔒 Secure UIDAI Verification Protocol</div>
+</div>
+
+<script>
+    // MATCHING YOUR SPRING BOOT CONFIG
+    const API_URL = "http://localhost:8081/aadhaar";
+    let isWaitingForOtp = false;
+    let savedAadhaar = "";
+
+    async function processIdentity() {
+        const feedback = document.getElementById('feedback');
+        const btn = document.getElementById('primaryBtn');
+        feedback.innerText = "";
+
+        if (!isWaitingForOtp) {
+            // --- PHASE 1: START VERIFICATION ---
+            const aadhaarInputs = document.querySelectorAll('.aadhaar-box');
+            savedAadhaar = Array.from(aadhaarInputs).map(i => i.value).join('');
+
+            if(savedAadhaar.length < 12) {
+                showFeedback("Please enter all 12 digits.", "error");
+                return;
+            }
+
+            try {
+                btn.disabled = true;
+                btn.innerText = "Connecting...";
+
+                // We use URLSearchParams to ensure @RequestParam in Java gets the data correctly
+                const response = await fetch(`${API_URL}/start?aadhaarNumber=${savedAadhaar}`, {
+                    method: 'POST'
+                });
+
+                const text = await response.text();
+
+                if (response.ok && !text.toLowerCase().includes("not found")) {
+                    switchToOtpMode(text);
+                } else {
+                    showFeedback(text || "Aadhaar not found in database.", "error");
+                }
+            } catch (err) {
+                console.error("Connection Error:", err);
+                showFeedback("Server connection failed. Is Spring Boot running on 8081?", "error");
+            } finally {
+                btn.disabled = false;
+                if(!isWaitingForOtp) btn.innerText = "Generate OTP";
+            }
+        } else {
+            // --- PHASE 2: VERIFY OTP ---
+            const otpInputs = document.querySelectorAll('.otp-box');
+            const fullOtp = Array.from(otpInputs).map(i => i.value).join('');
+
+            if(fullOtp.length < 6) {
+                showFeedback("Enter 6-digit OTP", "error");
+                return;
+            }
+
+            try {
+                btn.disabled = true;
+                btn.innerText = "Verifying...";
+
+                const response = await fetch(`${API_URL}/verifyOtp?aadhaarNumber=${savedAadhaar}&otp=${fullOtp}`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    const profileData = await response.json();
+                    showFeedback("Identity Verified!", "success");
+
+                    // Store user profile for dashboard use
+                    localStorage.setItem('verifiedUser', JSON.stringify(profileData));
+
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+                } else {
+                    showFeedback("Invalid or Expired OTP.", "error");
+                }
+            } catch (err) {
+                showFeedback("An error occurred during verification.", "error");
+            } finally {
+                btn.disabled = false;
+                if(isWaitingForOtp) btn.innerText = "Verify & Complete";
+            }
+        }
+    }
+
+    function switchToOtpMode(msg) {
+        document.getElementById('aadhaar-container').style.display = 'none';
+        document.getElementById('otp-container').style.display = 'flex';
+        document.querySelectorAll('.otp-box').forEach(el => el.style.display = 'block');
+
+        document.getElementById('main-title').innerText = "Confirm OTP";
+        document.getElementById('main-desc').innerText = "A code has been sent to your registered Gmail.";
+        document.getElementById('primaryBtn').innerText = "Verify & Complete";
+        document.getElementById('step-icon').innerText = "📲";
+
+        showFeedback(msg, "success");
+        isWaitingForOtp = true;
+    }
+
+    function showFeedback(text, type) {
+        const feedback = document.getElementById('feedback');
+        feedback.className = `status-msg ${type}`;
+        feedback.innerText = text;
+    }
+
+    // --- AUTO-FOCUS LOGIC ---
+    const allInputs = document.querySelectorAll('.input-box');
+    allInputs.forEach((input, index) => {
+        input.addEventListener('input', () => {
+            if (input.value.length === input.maxLength && index < allInputs.length - 1) {
+                allInputs[index + 1].focus();
+            }
+        });
+        input.addEventListener('keydown', (e) => {
+            if (e.key === "Backspace" && !input.value && index > 0) {
+                allInputs[index - 1].focus();
+            }
+        });
+    });
+</script>
+</body>
+</html>

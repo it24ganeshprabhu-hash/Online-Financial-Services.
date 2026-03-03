@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Services - Online Financial Services</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-teal: #00BFA5;
+            --primary-dark: #00897B;
+            --bg-app: #F4F7F8;
+            --white: #FFFFFF;
+            --text-main: #2D3142;
+            --text-muted: #9BA1A6;
+            --sidebar-width: 260px;
+            --radius: 24px;
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-app);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--white);
+            padding: 40px 24px;
+            border-right: 1px solid #EAECEF;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--primary-teal); text-decoration: none; margin-bottom: 50px; }
+
+        .nav-item {
+            display: flex; padding: 16px 20px; color: var(--text-muted);
+            text-decoration: none; border-radius: 16px; margin-bottom: 8px;
+            font-weight: 600; transition: 0.3s;
+        }
+
+        .nav-item.active, .nav-item:hover { background: rgba(0, 191, 165, 0.08); color: var(--primary-teal); }
+
+        .main-container { flex: 1; padding: 40px 60px; max-width: 1200px; margin: 0 auto; width: 100%; }
+
+        .page-header { margin-bottom: 40px; }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .service-card {
+            background: var(--white); padding: 40px; border-radius: var(--radius);
+            box-shadow: var(--shadow); transition: 0.3s; border: 1px solid transparent;
+        }
+
+        .service-card:hover { border-color: var(--primary-teal); transform: translateY(-5px); }
+
+        .icon-circle {
+            width: 60px; height: 60px; background: rgba(0, 191, 165, 0.1);
+            color: var(--primary-teal); border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 20px;
+        }
+
+        /* Mobile Nav */
+        .mobile-nav { display: none; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { display: none; }
+            .mobile-nav {
+                display: flex; position: fixed; bottom: 0; width: 100%;
+                background: white; border-top: 1px solid #eee; justify-content: space-around;
+                padding: 15px 0; z-index: 1000;
+            }
+            .mobile-nav a { text-decoration: none; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; }
+            .mobile-nav a.active { color: var(--primary-teal); }
+            .main-container { padding: 20px; padding-bottom: 100px; }
+            .page-header h2 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <a href="home.html" class="logo">💠 OFS Portal</a>
+        <nav>
+            <a href="home.html" class="nav-item">Home</a>
+            <a href="about.html" class="nav-item">About us</a>
+            <a href="services.html" class="nav-item active">Services</a>
+           
+        </nav>
+    </aside>
+
+    <main class="main-container">
+        <header class="page-header">
+            <p style="color:var(--text-muted); font-weight: 500;">Solutions</p>
+            <h2>Our Core Services</h2>
+        </header>
+
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="icon-circle">💳</div>
+                <h3>Digital Banking</h3>
+                <p>Transfer funds, pay bills, and manage your assets through our intuitive portal.</p>
+            </div>
+
+            <div class="service-card">
+                <div class="icon-circle">🛡️</div>
+                <h3>Identity Protection</h3>
+                <p>Advanced security linked to your Aadhaar for foolproof identity verification.</p>
+            </div>
+
+            <div class="service-card">
+                <div class="icon-circle">📊</div>
+                <h3>Wealth Analytics</h3>
+                <p>Track your spending and savings with automated data visualization.</p>
+            </div>
+        </div>
+    </main>
+
+    <nav class="mobile-nav">
+        <a href="home.html">🏠 Home</a>
+        <a href="about.html">👥 About</a>
+        <a href="services.html" class="active">🛠 Services</a>
+    </nav>
+</body>
+</html>

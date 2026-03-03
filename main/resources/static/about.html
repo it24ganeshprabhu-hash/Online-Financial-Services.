@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Online Financial Services</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-teal: #00BFA5;
+            --primary-dark: #00897B;
+            --bg-app: #F4F7F8;
+            --white: #FFFFFF;
+            --text-main: #2D3142;
+            --text-muted: #9BA1A6;
+            --sidebar-width: 260px;
+            --radius: 24px;
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-app);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar - Desktop Only */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--white);
+            padding: 40px 24px;
+            border-right: 1px solid #EAECEF;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--primary-teal); text-decoration: none; margin-bottom: 50px; }
+
+        .nav-item {
+            display: flex; padding: 16px 20px; color: var(--text-muted);
+            text-decoration: none; border-radius: 16px; margin-bottom: 8px;
+            font-weight: 600; transition: 0.3s;
+        }
+
+        .nav-item.active, .nav-item:hover { background: rgba(0, 191, 165, 0.08); color: var(--primary-teal); }
+
+        /* Main Content */
+        .main-container { flex: 1; padding: 40px 60px; max-width: 1200px; margin: 0 auto; width: 100%; }
+
+        .page-header { margin-bottom: 40px; }
+
+        .hero-banner {
+            background: linear-gradient(135deg, var(--primary-teal) 0%, var(--primary-dark) 100%);
+            color: white; padding: 60px; border-radius: var(--radius); margin-bottom: 40px;
+        }
+
+        .hero-banner h1 { font-size: 3rem; margin-bottom: 15px; }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .info-card {
+            background: var(--white); padding: 40px; border-radius: var(--radius);
+            box-shadow: var(--shadow); border: 1px solid transparent;
+        }
+
+        .info-card h3 { font-size: 1.6rem; margin-bottom: 15px; }
+        .info-card p { color: var(--text-muted); line-height: 1.6; }
+
+        /* Mobile Adjustments */
+        .mobile-nav { display: none; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { display: none; }
+            .mobile-nav {
+                display: flex; position: fixed; bottom: 0; width: 100%;
+                background: white; border-top: 1px solid #eee; justify-content: space-around;
+                padding: 15px 0; z-index: 1000;
+            }
+            .mobile-nav a { text-decoration: none; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; }
+            .mobile-nav a.active { color: var(--primary-teal); }
+            .main-container { padding: 20px; padding-bottom: 100px; }
+            .hero-banner { padding: 30px; }
+            .hero-banner h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <a href="home.html" class="logo">💠 OFS Portal</a>
+        <nav>
+            <a href="home.html" class="nav-item">Home</a>
+            <a href="about.html" class="nav-item active">About us</a>
+            <a href="services.html" class="nav-item">Services</a>
+            
+        </nav>
+    </aside>
+
+    <main class="main-container">
+        <header class="page-header">
+            <p style="color:var(--text-muted); font-weight: 500;">Who We Are</p>
+            <h2>Our Mission</h2>
+        </header>
+
+        <section class="hero-banner">
+            <h1>Empowering Your Future</h1>
+            <p style="opacity: 0.9; font-size: 1.1rem; line-height: 1.6; max-width: 700px;">
+                Online Financial Services (OFS) was founded to bridge the gap between traditional banking and the digital era. We prioritize security, transparency, and user-centric design.
+            </p>
+        </section>
+
+        <div class="card-grid">
+            <div class="info-card">
+                <h3>Security First</h3>
+                <p>We utilize military-grade encryption and Aadhaar-integrated verification to ensure your assets remain protected 24/7.</p>
+            </div>
+            <div class="info-card">
+                <h3>Global Reach</h3>
+                <p>Access your finances from anywhere in the world with our seamless digital portal and real-time transaction system.</p>
+            </div>
+        </div>
+    </main>
+
+    <nav class="mobile-nav">
+        <a href="home.html">🏠 Home</a>
+        <a href="about.html" class="active">👥 About</a>
+        <a href="services.html">🛠 Services</a>
+    </nav>
+</body>
+</html>

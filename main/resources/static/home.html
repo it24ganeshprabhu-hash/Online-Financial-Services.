@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OFS - Home</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-teal: #00BFA5;
+            --primary-dark: #00897B;
+            --bg-app: #F4F7F8;
+            --white: #FFFFFF;
+            --text-main: #2D3142;
+            --text-muted: #9BA1A6;
+            --sidebar-width: 260px;
+            --radius: 24px;
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-app);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar (Hidden on Mobile) --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--white);
+            padding: 40px 24px;
+            border-right: 1px solid #EAECEF;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--primary-teal); text-decoration: none; margin-bottom: 50px; }
+
+        .nav-item {
+            display: flex; padding: 16px 20px; color: var(--text-muted);
+            text-decoration: none; border-radius: 16px; margin-bottom: 8px;
+            font-weight: 600; transition: 0.3s;
+        }
+
+        .nav-item.active, .nav-item:hover { background: rgba(0, 191, 165, 0.08); color: var(--primary-teal); }
+
+        /* --- Main Content --- */
+        .main-container { flex: 1; padding: 40px 60px; max-width: 1200px; margin: 0 auto; width: 100%; }
+
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+
+        .auth-group { display: flex; gap: 10px; }
+
+        .btn { padding: 12px 24px; border-radius: 12px; font-weight: 600; cursor: pointer; text-decoration: none; font-size: 0.9rem; border: none; }
+        .btn-login { background: var(--primary-teal); color: white; }
+        .btn-signup { background: white; color: var(--text-main); border: 1px solid #DDE1E6; }
+
+        .hero-banner {
+            background: linear-gradient(135deg, var(--primary-teal) 0%, var(--primary-dark) 100%);
+            color: white; padding: 60px; border-radius: var(--radius); margin-bottom: 40px;
+        }
+
+        .hero-banner h1 { font-size: 3rem; margin-bottom: 15px; }
+
+        .service-card {
+            background: var(--white); padding: 40px; border-radius: var(--radius);
+            box-shadow: var(--shadow); transition: 0.3s; width: 100%; cursor: pointer;
+        }
+
+        /* --- MOBILE ADJUSTMENTS --- */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { display: none; } /* Hide sidebar on mobile */
+            
+            /* Add Bottom Navigation for Mobile */
+            .mobile-nav {
+                display: flex; position: fixed; bottom: 0; width: 100%;
+                background: white; border-top: 1px solid #eee; justify-content: space-around;
+                padding: 15px 0; z-index: 1000;
+            }
+            .mobile-nav a { text-decoration: none; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; }
+            .mobile-nav a.active { color: var(--primary-teal); }
+
+            .main-container { padding: 20px; padding-bottom: 80px; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 20px; }
+            .hero-banner { padding: 30px; }
+            .hero-banner h1 { font-size: 1.8rem; }
+            .hero-text { font-size: 1rem; }
+            .service-card { padding: 25px; }
+        }
+
+        .service-card:hover
+        {
+             transform: translateY(-5px);
+             border: 1px solid var(--primary-teal);
+             box-shadow: 0 15px 45px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Desktop Nav Hidden on Desktop */
+        @media (min-width: 769px) { .mobile-nav { display: none; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <a href="home.html" class="logo">💠 OFS Portal</a>
+        <nav>
+            <a href="home.html" class="nav-item active">Home</a>
+            <a href="about.html" class="nav-item">About us</a>
+            <a href="services.html" class="nav-item">Services</a>
+        </nav>
+    </aside>
+
+    <main class="main-container">
+        <header class="page-header">
+            <div><p style="color:var(--text-muted)">OFS Portal</p><h2>Account Gateway</h2></div>
+            <div class="auth-group">
+                <a href="login.html" class="btn btn-login">Login</a>
+                <a href="signup.html" class="btn btn-signup">Sign Up</a>
+            </div>
+        </header>
+
+        <section class="hero-banner">
+            <h1>Online Financial Services</h1>
+            <p class="hero-text">Securely manage your assets and verify your identity with our integrated Aadhaar verification system.</p>
+        </section>
+
+        <div class="service-card" onclick="location.href='aadhaar.html'">
+            <h3 style="font-size:1.5rem; margin-bottom:10px;">Identity Verification</h3>
+            <p style="color:var(--text-muted); line-height:1.5;">Link and authenticate your Aadhaar profile to unlock global financial features.</p>
+        </div>
+    </main>
+
+    <nav class="mobile-nav">
+        <a href="home.html" class="active">🏠 Home</a>
+        <a href="about.html">👥 About</a>
+        <a href="services.html">🛠 Services</a>
+    </nav>
+</body>
+</html>

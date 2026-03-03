@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OFS Terminal | Live Trading</title>
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-teal: #00BFA5;
+            --bg-dark: #121417;
+            --card-bg: #1e222d;
+            --text-light: #d1d4dc;
+            --up-color: #00c076;
+            --down-color: #ff3a68;
+            --border-color: #2a2e39;
+        }
+
+        body, html { margin: 0; padding: 0; background: var(--bg-dark); color: var(--text-light); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; }
+
+        /* --- NAVIGATION --- */
+        .terminal-nav { height: 65px; background: var(--card-bg); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 25px; }
+        .nav-left { display: flex; align-items: center; gap: 20px; }
+        #livePriceDisplay { font-weight: 900; font-size: 1.1rem; }
+
+        .ofs-logo-container { display: flex; align-items: center; gap: 10px; padding: 5px 15px; background: rgba(0, 191, 165, 0.1); border-radius: 12px; border: 1px solid rgba(0, 191, 165, 0.2); }
+        .logo-text { font-weight: 900; letter-spacing: 1.5px; color: var(--primary-teal); font-size: 1.2rem; }
+
+        /* --- LAYOUT --- */
+        .terminal-body { display: flex; height: calc(100vh - 65px); width: 100%; }
+        #chart-container { flex: 1; height: 100%; background: #1e222d; }
+
+        .sidebar { width: 350px; background: var(--card-bg); border-left: 1px solid var(--border-color); padding: 20px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
+        .balance-box { background: #2a2e39; padding: 15px; border-radius: 12px; border-left: 4px solid var(--primary-teal); }
+
+        .tab-row { display: flex; background: #121417; border-radius: 10px; padding: 4px; }
+        .tab-btn { flex: 1; border: none; background: none; color: #848e9c; padding: 12px; cursor: pointer; border-radius: 8px; font-weight: bold; }
+        .tab-btn.active.buy { background: var(--up-color); color: white; }
+        .tab-btn.active.sell { background: var(--down-color); color: white; }
+
+        .exec-btn { padding: 18px; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 1.1rem; width: 100%; transition: 0.2s; }
+        .btn-buy { background: var(--up-color); color: white; }
+        .btn-sell { background: var(--down-color); color: white; }
+        .exec-btn:active { transform: scale(0.98); }
+
+        input { width: 100%; background: #121417; border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 10px; box-sizing: border-box; }
+
+        .transfer-section { background: rgba(243, 156, 18, 0.1); padding: 15px; border-radius: 12px; border: 1px dashed #f39c12; }
+
+        /* HOLDINGS TABLE */
+        .holdings-container { margin-top: 5px; background: #121417; border-radius: 12px; padding: 12px; border: 1px solid var(--border-color); }
+        .holdings-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; text-align: left; }
+        .holdings-table th { color: #848e9c; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); }
+        .holdings-table td { padding: 10px 0; color: white; border-bottom: 1px solid #1e222d; }
+        .pnl-green { color: var(--up-color) !important; font-weight: bold; }
+        .pnl-red { color: var(--down-color) !important; font-weight: bold; }
+        .exit-btn { color: #848e9c; cursor: pointer; border: 1px solid #2a2e39; background: none; padding: 2px 5px; border-radius: 4px; font-size: 0.65rem; }
+        .exit-btn:hover { color: white; background: var(--down-color); border-color: var(--down-color); }
+
+        /* LOGS BUTTON STYLE */
+        .logs-btn { background: #3a3f50; border: 1px solid var(--border-color); color: white; padding: 0 15px; border-radius: 8px; cursor: pointer; font-weight: bold; height: 35px; text-decoration: none; display: flex; align-items: center; font-size: 0.8rem; transition: 0.3s; }
+        .logs-btn:hover { background: #4a4f60; }
+    </style>
+</head>
+<body>
+
+<nav class="terminal-nav">
+    <div class="nav-left">
+        <a href="dashboard.html" style="text-decoration:none; color:#848e9c; font-size: 0.8rem;">← Dashboard</a>
+        <div style="display:flex; flex-direction:column; margin-left: 10px;">
+            <span id="tickerDisplay" style="font-weight:800; color:white;">RELIANCE</span>
+            <span id="livePriceDisplay">₹0.00</span>
+        </div>
+    </div>
+
+    <div style="display:flex; gap:10px; align-items: center;">
+        <input type="text" id="symbolInput" placeholder="Symbol (e.g. TCS)" style="width:130px; height: 35px;">
+        <button onclick="changeSymbol()" style="background:var(--primary-teal); border:none; color:white; padding:0 12px; border-radius:8px; cursor:pointer; font-weight:bold; height: 35px;">Search</button>
+        <a href="logs.html" class="logs-btn">📜 Logs</a>
+    </div>
+
+    <div class="nav-right">
+        <div class="ofs-logo-container">
+            <span class="logo-text" style="font-size: 1rem;">OFS</span>
+        </div>
+    </div>
+</nav>
+
+<div class="terminal-body">
+    <div id="chart-container"></div>
+    <aside class="sidebar">
+        <div class="balance-box">
+            <div style="font-size: 0.7rem; color:#848e9c; text-transform: uppercase;">Available Cash</div>
+            <div id="portfolioCash" style="font-size: 1.4rem; font-weight: 900; color: white;">₹0.00</div>
+        </div>
+
+        <div class="transfer-section">
+            <div style="font-size: 0.65rem; color:#f39c12; font-weight: 800; margin-bottom: 5px; text-transform: uppercase;">Bank Transfer</div>
+            <input type="number" id="transferAmount" placeholder="₹ Amount" style="padding: 8px; height: 35px; margin-bottom: 8px;">
+            <div style="display: flex; gap: 5px;">
+                <button onclick="transferFunds('add')" style="flex: 1; background: var(--up-color); color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.7rem;">ADD</button>
+                <button onclick="transferFunds('withdraw')" style="flex: 1; background: var(--down-color); color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.7rem;">WITHDRAW</button>
+            </div>
+        </div>
+
+        <div class="tab-row">
+            <button class="tab-btn active buy" id="buyTab" onclick="setMode('BUY')">BUY</button>
+            <button class="tab-btn" id="sellTab" onclick="setMode('SELL')">SELL</button>
+        </div>
+
+        <div>
+            <label style="font-size:0.7rem; color:#848e9c;">QUANTITY</label>
+            <input type="number" id="tradeQty" value="1" min="1" oninput="updateTotal()" style="margin-top: 5px;">
+        </div>
+
+        <div style="background:#121417; padding:12px; border-radius:10px; display:flex; justify-content:space-between; font-size: 0.85rem;">
+            <span style="color:#848e9c;">Order Value</span>
+            <span id="estTotal" style="font-weight:bold; color:white;">₹0.00</span>
+        </div>
+
+        <button class="exec-btn btn-buy" id="mainBtn" onclick="executeTrade()">PLACE BUY ORDER</button>
+
+        <div class="holdings-container">
+            <div style="font-weight: 900; font-size: 0.7rem; margin-bottom: 10px; color: #848e9c; text-transform: uppercase;">Current Holdings</div>
+            <table class="holdings-table">
+                <thead>
+                <tr><th>STOCK</th><th>QTY</th><th>P&L</th><th></th></tr>
+                </thead>
+                <tbody id="holdingsList">
+                </tbody>
+            </table>
+        </div>
+    </aside>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:8081/api/trade';
+    const userId = localStorage.getItem("userId") || 1;
+
+    let chart, candleSeries, lastCandle;
+    let currentPrice = 0, currentSymbol = 'RELIANCE', currentMode = 'BUY', liveInterval;
+    let userHoldings = [];
+
+    window.addEventListener('load', async () => {
+        initChart();
+        loadInitialData();
+
+        // Ensure the Logs button carries the UserId for the Passbook page
+        const logsBtn = document.querySelector('.logs-btn');
+        if (logsBtn) {
+            logsBtn.href = `logs.html?id=${userId}`;
+        }
+
+        await refreshAll(); // Load data immediately on page load
+    });
+
+    async function apiCall(endpoint, method = 'GET', params = {}) {
+        const url = new URL(`${API_URL}${endpoint}`);
+        let options = {
+            method: method,
+            headers: { 'Accept': 'application/json, text/plain, */*' }
+        };
+        Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+        try {
+            const response = await fetch(url, options);
+            const text = await response.text();
+            if (!response.ok) throw new Error(text || 'Server Error');
+            try { return JSON.parse(text); } catch (e) { return text; }
+        } catch (err) {
+            console.error(`Fetch error on ${endpoint}:`, err);
+            return null;
+        }
+    }
+
+    async function refreshAll() {
+        await loadPortfolio();
+        await loadHoldings();
+    }
+
+    async function loadPortfolio() {
+        const data = await apiCall('/portfolio-details', 'GET', { userId: userId });
+        if (data && typeof data === 'object' && data.cashBalance !== undefined) {
+            document.getElementById('portfolioCash').innerText = `₹${data.cashBalance.toLocaleString('en-IN', {minimumFractionDigits:2})}`;
+        }
+    }
+
+    async function loadHoldings() {
+        const data = await apiCall('/holdings', 'GET', { userId: userId });
+        if (data && Array.isArray(data)) {
+            userHoldings = data;
+            renderHoldings();
+        }
+    }
+
+    async function transferFunds(type) {
+        const amountInput = document.getElementById('transferAmount');
+        const amount = amountInput.value;
+        if (!amount || amount <= 0) return alert("Please enter a valid amount.");
+
+        const endpoint = type === 'add' ? '/transfer-funds' : '/withdraw-funds';
+        // This triggers the TradeService which saves to the main Transactions table (Logs)
+        const res = await apiCall(endpoint, 'POST', { userId: userId, amount: amount });
+
+        if (res) {
+            alert("✅ " + res);
+            amountInput.value = '';
+            await refreshAll(); // Updates UI and confirms backend recorded the log
+        } else {
+            alert("❌ Transfer failed.");
+        }
+    }
+
+    async function executeTrade() {
+        const qty = document.getElementById('tradeQty').value;
+        if (!qty || qty <= 0) return alert("Please enter quantity.");
+        const res = await apiCall('/execute', 'POST', {
+            userId: userId, symbol: currentSymbol, type: currentMode, qty: qty, price: currentPrice
+        });
+        if (res) {
+            alert("✅ " + res);
+            await refreshAll();
+        } else alert("❌ Trade failed.");
+    }
+
+    function renderHoldings() {
+        const container = document.getElementById('holdingsList');
+        if (userHoldings.length === 0) {
+            container.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#848e9c;">No active holdings</td></tr>';
+            return;
+        }
+
+        container.innerHTML = userHoldings.map(h => {
+            const isCurrentTicker = h.symbol === currentSymbol;
+            const marketPrice = isCurrentTicker ? currentPrice : (h.avgPrice || 0);
+
+            const buyPrice = h.avgPrice || marketPrice;
+            const pnlValue = (marketPrice - buyPrice) * h.quantity;
+            const pnlClass = pnlValue >= 0 ? 'pnl-green' : 'pnl-red';
+            const sign = pnlValue >= 0 ? '+' : '';
+
+            return `
+                <tr>
+                    <td style="font-weight:bold;">${h.symbol}</td>
+                    <td>${h.quantity}</td>
+                    <td class="${pnlClass}">${sign}${pnlValue.toFixed(2)}</td>
+                    <td><button class="exit-btn" onclick="quickSell('${h.symbol}', ${h.quantity})">✕</button></td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function initChart() {
+        const container = document.getElementById('chart-container');
+        chart = LightweightCharts.createChart(container, {
+            width: container.clientWidth, height: container.clientHeight,
+            layout: { background: { color: '#1e222d' }, textColor: '#d1d4dc' },
+            grid: { vertLines: { color: '#2a2e39' }, horzLines: { color: '#2a2e39' } },
+        });
+        candleSeries = chart.addCandlestickSeries({ upColor: '#00c076', downColor: '#ff3a68', borderVisible: false });
+        window.addEventListener('resize', () => chart.applyOptions({ width: container.clientWidth, height: container.clientHeight }));
+    }
+
+    function loadInitialData() {
+        const history = generateHistory();
+        candleSeries.setData(history);
+        lastCandle = { ...history[history.length - 1] };
+        currentPrice = lastCandle.close;
+        document.getElementById('livePriceDisplay').innerText = `₹${currentPrice.toLocaleString()}`;
+        updateTotal();
+        chart.timeScale().fitContent();
+        startLiveUpdates();
+    }
+
+    function startLiveUpdates() {
+        if (liveInterval) clearInterval(liveInterval);
+        liveInterval = setInterval(() => {
+            const change = (Math.random() - 0.5) * (currentPrice * 0.0008);
+            currentPrice = parseFloat((currentPrice + change).toFixed(2));
+            document.getElementById('livePriceDisplay').innerText = `₹${currentPrice.toLocaleString()}`;
+            lastCandle.close = currentPrice;
+            candleSeries.update(lastCandle);
+            updateTotal();
+            renderHoldings();
+        }, 1000);
+    }
+
+    function generateHistory() {
+        const data = []; let t = new Date(); t.setDate(t.getDate() - 50);
+        let val = 1500;
+        for (let i = 0; i < 50; i++) {
+            const o = val; const c = val + (Math.random() * 20 - 10);
+            data.push({ time: t.toISOString().split('T')[0], open: o, high: Math.max(o,c)+5, low: Math.min(o,c)-5, close: c });
+            t.setDate(t.getDate() + 1); val = c;
+        }
+        return data;
+    }
+
+    function setMode(mode) {
+        currentMode = mode;
+        document.getElementById('buyTab').className = `tab-btn ${mode === 'BUY' ? 'active buy' : ''}`;
+        document.getElementById('sellTab').className = `tab-btn ${mode === 'SELL' ? 'active sell' : ''}`;
+        const btn = document.getElementById('mainBtn');
+        btn.className = `exec-btn ${mode === 'BUY' ? 'btn-buy' : 'btn-sell'}`;
+        btn.innerText = `PLACE ${mode} ORDER`;
+    }
+
+    function updateTotal() {
+        const qty = document.getElementById('tradeQty').value || 1;
+        document.getElementById('estTotal').innerText = `₹${(qty * currentPrice).toLocaleString()}`;
+    }
+
+    function changeSymbol() {
+        const input = document.getElementById('symbolInput').value.toUpperCase();
+        if(input) {
+            currentSymbol = input;
+            document.getElementById('tickerDisplay').innerText = input;
+            currentPrice = Math.random() * 1500 + 100;
+            loadInitialData();
+            refreshAll();
+        }
+    }
+
+    function quickSell(symbol, qty) {
+        setMode('SELL');
+        currentSymbol = symbol;
+        document.getElementById('tickerDisplay').innerText = symbol;
+        document.getElementById('tradeQty').value = qty;
+        updateTotal();
+    }
+</script>
+</body>
+</html>

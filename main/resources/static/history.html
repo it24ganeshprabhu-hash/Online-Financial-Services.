@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Logs - OFS Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-teal: #00BFA5;
+            --primary-dark: #00897B;
+            --accent-indigo: #4F46E5;
+            --bg-app: #F8FAFC;
+            --white: #FFFFFF;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --shadow-premium: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-app);
+            background-image: radial-gradient(circle at top right, rgba(0, 191, 165, 0.08), transparent 600px);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: var(--text-main);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* --- Glassmorphic Header --- */
+        .header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            padding: 25px 40px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: var(--shadow-premium);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--primary-teal), var(--accent-indigo));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* --- Buttons --- */
+        .btn-header {
+            padding: 12px 24px;
+            background: var(--white);
+            color: var(--text-main);
+            border: 1.5px solid #E2E8F0;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-header:hover {
+            border-color: var(--primary-teal);
+            color: var(--primary-teal);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 191, 165, 0.15);
+        }
+
+        /* --- Content Card --- */
+        .content {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-premium);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            overflow: hidden;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .history-table thead {
+            background: #F1F5F9;
+        }
+
+        .history-table th {
+            padding: 20px 25px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+        .history-table tbody tr {
+            transition: background 0.2s ease;
+        }
+
+        .history-table tbody tr:hover {
+            background-color: #F8FAFC;
+        }
+
+        .history-table td {
+            padding: 20px 25px;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            border-bottom: 1px solid #F1F5F9;
+            font-weight: 500;
+        }
+
+        .history-table td:first-child {
+            font-weight: 800;
+            color: var(--primary-teal);
+            width: 100px;
+        }
+
+        .history-table td:nth-child(2) {
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        .date {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* --- Empty State --- */
+        .history-empty {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .history-empty::before {
+            content: '📂';
+            display: block;
+            font-size: 50px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 20px;
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            body { padding: 20px 10px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>System Audit Logs</h1>
+        <div>
+            <button class="btn-header" onclick="goBackToAdmin()">← Return to Dashboard</button>
+        </div>
+    </div>
+    <div class="content">
+        <div id="historyMessage" class="history-empty" style="display:none"></div>
+        <div class="table-wrapper">
+            <table class="history-table" id="historyTable">
+                <thead>
+                <tr>
+                    <th>Log ID</th>
+                    <th>Activity Description</th>
+                    <th>Timestamp</th>
+                </tr>
+                </thead>
+                <tbody id="historyBody">
+                <tr>
+                    <td colspan="3" class="history-empty">Loading history records...</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:8081';
+    let userId = null;
+
+    function getUserIdFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        const urlUserId = params.get('id');
+        const storedUserId = localStorage.getItem('userId');
+        userId = storedUserId || urlUserId;
+    }
+
+    function goBackToAdmin() {
+        const params = new URLSearchParams();
+        if (userId) params.set('id', userId);
+        params.set('role', 'admin');
+        window.location.href = `admin.html?${params.toString()}`;
+    }
+
+    async function loadHistories() {
+        try {
+            const res = await fetch(`${API_URL}/histories/admin/${userId}`);
+            if (!res.ok) throw new Error('Failed to load histories');
+            const histories = await res.json();
+            renderHistories(histories);
+        } catch (err) {
+            console.error(err);
+            const body = document.getElementById('historyBody');
+            body.innerHTML = `<tr><td colspan="3" class="history-empty">Unable to load history. Ensure backend is running.</td></tr>`;
+        }
+    }
+
+    function renderHistories(list) {
+        const body = document.getElementById('historyBody');
+        if (!list || list.length === 0) {
+            body.innerHTML = `<tr><td colspan="3" class="history-empty">No history records found.</td></tr>`;
+            return;
+        }
+
+        body.innerHTML = list.map(h => `
+            <tr>
+                <td>#${h.id}</td>
+                <td>${escapeHtml(h.description)}</td>
+                <td class="date">${formatDate(h.date)}</td>
+            </tr>
+        `).join('');
+    }
+
+    function formatDate(d) {
+        if (!d) return '';
+        const dt = new Date(d);
+        if (isNaN(dt)) return d;
+        return dt.toLocaleString();
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>"']/g, function(c) {
+            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c];
+        });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        getUserIdFromURL();
+        loadHistories();
+    });
+</script>
+</body>
+</html>

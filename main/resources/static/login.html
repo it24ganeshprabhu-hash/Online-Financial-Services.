@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - OFS Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-teal: #00BFA5;
+            --primary-dark: #00897B;
+            --bg-app: #F4F7F8;
+            --white: #FFFFFF;
+            --text-main: #2D3142;
+            --text-muted: #9BA1A6;
+            --radius: 20px;
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-app);
+            font-family: 'Inter', sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; padding: 20px;
+        }
+
+        .auth-card {
+            background: var(--white); width: 100%; max-width: 420px;
+            padding: 40px; border-radius: var(--radius); box-shadow: var(--shadow);
+        }
+
+        .auth-header { text-align: center; margin-bottom: 30px; }
+        .logo-mark { font-size: 2rem; color: var(--primary-teal); font-weight: 800; text-decoration: none; display: block; margin-bottom: 10px; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; color: var(--text-main); }
+
+        .form-input, select {
+            width: 100%; padding: 14px; border: 2px solid #EAECEF;
+            border-radius: 12px; font-size: 1rem; transition: 0.3s; background: white;
+        }
+
+        .form-input:focus, select:focus { outline: none; border-color: var(--primary-teal); }
+
+        .btn-submit {
+            width: 100%; padding: 16px; background: var(--primary-teal);
+            color: white; border: none; border-radius: 12px;
+            font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.3s;
+        }
+
+        .btn-submit:hover { background: var(--primary-dark); transform: translateY(-2px); }
+
+        .message { padding: 12px; border-radius: 10px; margin-bottom: 20px; font-size: 0.85rem; display: none; text-align: center; }
+        .message.error { background: #fee2e2; color: #dc2626; display: block; }
+        .message.success { background: #dcfce7; color: #16a34a; display: block; }
+
+        .auth-footer { text-align: center; margin-top: 25px; font-size: 0.9rem; color: var(--text-muted); }
+        .auth-footer a { color: var(--primary-teal); text-decoration: none; font-weight: 600; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="auth-card">
+    <div class="auth-header">
+        <a href="home.html" class="logo-mark">💠 OFS</a>
+        <h2>Welcome Back</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Login to your financial portal</p>
+    </div>
+
+    <div id="loginMessage" class="message"></div>
+
+    <form id="loginForm">
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="loginUsername" class="form-input" required>
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="loginPassword" class="form-input" required>
+        </div>
+        <div class="form-group">
+            <label>Role</label>
+            <select id="loginRole" required>
+                <option value="">Select Role</option>
+                <option value="customer">Customer</option>
+                <option value="admin">Admin</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-submit">Login</button>
+    </form>
+
+    <div class="auth-footer">
+        Don't have an account? <a onclick="window.location.href='signup.html'">Sign Up</a>
+        <br><br>
+        <a onclick="window.location.href='home.html'">← Back to Home</a>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:8081';
+
+    function showMessage(elementId, message, type) {
+        const messageEl = document.getElementById(elementId);
+        messageEl.textContent = message;
+        messageEl.className = `message ${type}`;
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const loginData = {
+            username: document.getElementById('loginUsername').value,
+            password: document.getElementById('loginPassword').value,
+            role: document.getElementById('loginRole').value
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(loginData)
+            });
+
+            const result = (await response.text()).trim();
+
+            if (/^\d+$/.test(result)) {
+                showMessage('loginMessage', 'Login successful! Redirecting...', 'success');
+
+                localStorage.clear();
+                localStorage.setItem("userId", result);
+                const role = loginData.role.trim().toLowerCase();
+                localStorage.setItem("role", role);
+
+                setTimeout(() => {
+                    if (role === "admin") {
+                        window.location.href = `admin.html?id=${result}`;
+                    } else {
+                        // Pointing to aadhaar.html first for verification as discussed
+                        window.location.href = `dashboard.html?id=${result}`;
+                    }
+                }, 800);
+            } else {
+                showMessage('loginMessage', result, 'error');
+            }
+        } catch (error) {
+            showMessage('loginMessage', 'Connection error.', 'error');
+        }
+    });
+</script>
+</body>
+</html>
