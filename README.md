@@ -1,6 +1,6 @@
 # OFS Banking Application
 
-A Spring Boot banking application that integrates MySQL, MongoDB, email notifications, QR payments, AI advice, Aadhaar verification, trading portfolio support, and admin workflows.
+A Spring Boot banking application that integrates MySQL, MongoDB, QR payments, AI advice, Aadhaar verification, paper trading portfolio support, and admin workflows.
 
 ## Key Features
 
@@ -11,7 +11,7 @@ A Spring Boot banking application that integrates MySQL, MongoDB, email notifica
 - Support ticket creation and admin replies with notifications
 - QR code generation and scan payment support
 - Financial AI consultation endpoint
-- Trading operations with portfolio and holdings support
+- Paper trading operations with portfolio and holdings support
 - MongoDB-backed Aadhaar verification and MySQL-backed transactional data
 
 ## Technology Stack
@@ -73,8 +73,6 @@ spring.mail.properties.mail.smtp.starttls.enable=true
 
 groq.api.key=YOUR_AI_API_KEY
 ```
-
-> Do not commit secret keys or passwords to source control.
 
 ## Build and Run
 
@@ -180,6 +178,4 @@ Common pages include:
 - The PostgreSQL profile is included but commented out for Aiven/remote use.
 - Use `.env` or externalized config for sensitive values in production.
 
-## License
 
-This repository does not include an explicit license file.
